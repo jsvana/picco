@@ -400,7 +400,25 @@ fn push_one(
             path.file_name().unwrap().to_string_lossy().into_owned(),
         )
     };
-    let body = dev.upload(&upload_path, Some(&name), ft, dir, quiet)?;
+    // Transient failures (timeouts, the device dropping the socket) are
+    // common on a weak Wi-Fi link; re-ping and retry a few times.
+    let mut attempt = 0;
+    let body = loop {
+        attempt += 1;
+        match dev.upload(&upload_path, Some(&name), ft, dir, quiet) {
+            Ok(b) => break b,
+            Err(e) if attempt < 4 => {
+                eprintln!("attempt {attempt} failed for {name}: {e:#}; retrying in 10s");
+                std::thread::sleep(Duration::from_secs(10));
+                let mut waited = 0;
+                while dev.ping(Duration::from_secs(5)).is_err() && waited < 120 {
+                    std::thread::sleep(Duration::from_secs(5));
+                    waited += 5;
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    };
     println!(
         "pushed {name} ({ft}){}{}",
         title.map(|t| format!(" titled \"{t}\"")).unwrap_or_default(),

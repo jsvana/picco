@@ -153,8 +153,9 @@ impl Device {
             .post(format!("{}/upload", self.base))
             .query(&query)
             .multipart(form)
-            // ESP32 writes to SD at a few hundred KB/s; be generous.
-            .timeout(Duration::from_secs(30 * 60))
+            // The Picco has been seen taking 8 KB/s on a bad Wi-Fi day.
+            // Allow 4 KB/s plus slack rather than a fixed cap.
+            .timeout(Duration::from_secs(10 * 60 + len / 4096))
             .send()
             .with_context(|| format!("upload {name} to {}", self.base))?;
         bar.finish_and_clear();
