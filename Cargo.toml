@@ -1,0 +1,23 @@
+[package]
+name = "picco"
+version = "0.1.0"
+edition = "2021"
+description = "Push books, images and fonts to a BOOX Picco over Wi-Fi"
+license = "MIT"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+reqwest = { version = "0.12", features = ["blocking", "multipart"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+mdns-sd = "0.13"
+indicatif = "0.17"
+sha2 = "0.10"
+dirs = "6"
+local-ip-address = "0.6"
+headless_chrome = "1"
+base64 = "0.22"
+zip = { version = "4", default-features = false, features = ["deflate"] }
+toml = "0.8"
+regex = "1"
